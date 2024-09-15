@@ -27,26 +27,16 @@ jobs:
           cd $REPO_B
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-
-      # Step 3: Get the latest changes (diff) from repo A, excluding .github folder
-      - name: Get the diff of the latest commit from repo A, excluding .github folder
+      
+      # Step 3: Copy all contents of repo A to repo B, excluding .github folder
+      - name: Copy repo A contents to repo B (excluding .github)
         run: |
-          git diff HEAD~1 HEAD -- . ':(exclude).github' > changes.diff
-
-      # Step 4: Apply the changes to repo B
-      - name: Apply the changes to repo B
-        run: |
-          cd $REPO_B
-          git apply ../changes.diff
-
-      # Step 5: Get the last commit message from repo A
-      - name: Get the commit message from repo A
-        run: echo "COMMIT_MSG=$(git log -1 --pretty=%B)" >> $GITHUB_ENV
+          rsync -av --exclude='.github' ./ $REPO_B/  # Copy all files, excluding the .github folder
 
       # Step 6: Commit and push the changes to repo B
       - name: Commit and push the changes to repo B
         run: |
           cd $REPO_B
           git add .
-          git commit -m "$COMMIT_MSG"  # Use the commit message from repo A
+          git commit -m "Sync changes from repo A to repo B"
           git push origin main
