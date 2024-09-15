@@ -31,7 +31,7 @@ jobs:
       # Step 3: Copy all contents of repo A to repo B, excluding .github folder
       - name: Copy repo A contents to repo B (excluding .github)
         run: |
-          rsync -av --exclude='.github' --exclude='.git' ./ $REPO_B  # Copy all files, excluding the .github folder
+          rsync -av --exclude='.github' --exclude='.git' ./* $REPO_B  # Copy all files, excluding the .github folder
 
       # Step 6: Commit and push the changes to repo B
       - name: Commit and push the changes to repo B
