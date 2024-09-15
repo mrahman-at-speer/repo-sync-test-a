@@ -1,0 +1,52 @@
+name: Sync changes from Repo A to Repo B
+
+on:
+  push:
+    branches:
+      - testing  # Trigger the workflow when a commit is pushed to 'testing' branch
+  workflow_dispatch:  # Allow manual triggering of the workflow from the UI
+
+env:
+  REPO_B: repo-sync-test-b
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout repo A
+      - name: Checkout repo A
+        uses: actions/checkout@v3
+        with:
+          ref: testing  # Ensures that the 'testing' branch is checked out
+
+      # Step 2: Clone repo B
+      - name: Clone repo B
+        run: |
+          git clone https://${{ secrets.PAT }}@github.com/mrahman-at-speer/$REPO_B.git
+          cd $REPO_B
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      # Step 3: Get the latest changes (diff) from repo A, excluding .github folder
+      - name: Get the diff of the latest commit from repo A, excluding .github folder
+        run: |
+          git diff HEAD~1 HEAD -- . ':(exclude).github' > changes.diff
+
+      # Step 4: Apply the changes to repo B
+      - name: Apply the changes to repo B
+        run: |
+          cd $REPO_B
+          git apply ../changes.diff
+
+      # Step 5: Get the last commit message from repo A
+      - name: Get the commit message from repo A
+        run: echo "COMMIT_MSG=$(git log -1 --pretty=%B)" >> $GITHUB_ENV
+
+      # Step 6: Commit and push the changes to repo B
+      - name: Commit and push the changes to repo B
+        run: |
+          cd $REPO_B
+          git add .
+          git commit -m "$COMMIT_MSG"  # Use the commit message from repo A
+          git push origin main
