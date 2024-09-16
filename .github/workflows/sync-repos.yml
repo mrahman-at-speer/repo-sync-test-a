@@ -29,15 +29,19 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           cd ..
       
-      # Step 3: Copy all contents of repo A to repo B, excluding .github folder
+      # Step 3: Copy all contents of repo A to repo B, excluding .github, .git, and the cloned repo B folders
       - name: Copy repo A contents to repo B (excluding .github)
         run: |
           rsync -av --exclude='.github' --exclude='.git' --exclude=$REPO_B ./ $REPO_B/
 
-      # Step 6: Commit and push the changes to repo B
+      # Step 6: If there are any changes, then commit and push them to repo B
       - name: Commit and push the changes to repo B
         run: |
           cd $REPO_B
-          git add .
-          git commit -m "Sync changes from repo A to repo B"
-          git push origin main
+          if [ -n "$(git status --porcelain)" ]; then
+            git add .
+            git commit -m "Sync changes from repo A to repo B"
+            git push origin main
+          else
+            echo "No changes to commit"
+          fi
