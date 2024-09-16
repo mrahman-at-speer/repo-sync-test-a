@@ -27,6 +27,7 @@ jobs:
           cd $REPO_B
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          cd ..
       
       # Step 3: Copy all contents of repo A to repo B, excluding .github folder
       - name: Copy repo A contents to repo B (excluding .github)
